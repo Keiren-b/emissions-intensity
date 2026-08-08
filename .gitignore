@@ -3,3 +3,5 @@ data/raw/
 *.duckdb
 __pycache__/
 .DS_Store
+
+drafting_notes.md
