@@ -4,18 +4,24 @@ import json
 import re
 from pprint import pprint
 
+#----------------------------------------------------------------------------------------
+# format for downloading CER data through API:
+# /api/Dataset/{schemeId}/dataset/{datasetId}/download
+# Params: schemeId (req), datasetId (req), format, entitlement
+#----------------------------------------------------------------------------------------
+# NGER dataset
+
 BASE_URL = "https://api.cer.gov.au/datahub-public/v1"
 PARAMS = {}
 OUTPUT_DIR = pathlib.Path("data/raw")
 TIMEOUT = 60
 
-#----------------------------------------------------------------------------------------
-# format for accessing CER data through API:
-# /api/Dataset/{schemeId}/dataset/{datasetId}/download
-# Params: schemeId (req), datasetId (req), format, entitlement
-#----------------------------------------------------------------------------------------
-
-def make_api_call(url, method="get", data=None, params=None, headers=None, timeout = TIMEOUT):
+def make_api_call(url, 
+                  method="get", 
+                  data=None, 
+                  params=None, 
+                  headers=None, 
+                  timeout = TIMEOUT):
     request_method = getattr(requests, method.lower())
     try:
         response = request_method(
@@ -56,4 +62,6 @@ def make_api_call(url, method="get", data=None, params=None, headers=None, timeo
         
     return None
 
-make_api_call(BASE_URL)
+nger = make_api_call(
+    url = f'{BASE_URL}/api/Schemes/NGER/DatasetCatalogItems'
+)
