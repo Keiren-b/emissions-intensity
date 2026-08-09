@@ -81,5 +81,7 @@ generation = [item for item in nger if item["displayName"].startswith(STEM)]
 
 # testing each id and name pulled correctly
 # print("Found:", len(generation))
-# for item in generation:
-#     print(item["id"], item["displayName"])
+for item in generation:
+    year = re.search(r"(\d{4})[-–](\d{2})", item["displayName"])
+    year = f'{year.group(1)}-{year.group(2)}'
+    print(item["id"], year)
