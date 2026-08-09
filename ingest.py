@@ -15,6 +15,8 @@ BASE_URL = "https://api.cer.gov.au/datahub-public/v1"
 PARAMS = {}
 OUTPUT_DIR = pathlib.Path("data/raw")
 TIMEOUT = 60
+STEM = "Greenhouse and energy information by designated generation facility"
+
 
 def make_api_call(url, 
                   method="get", 
@@ -66,7 +68,7 @@ nger = make_api_call(
     url = f'{BASE_URL}/api/Schemes/NGER/DatasetCatalogItems'
 )
 
-for item in nger:
-    for key, value in item.items():
-        if isinstance(value, str) and "designated generation facility" in value:
-            print(f'{key}\n{value}\n') 
+# for item in nger:
+#     for key, value in item.items():
+#         if isinstance(value, str) and "designated generation facility" in value:
+#             print(f'{key}\n{value}\n') 
