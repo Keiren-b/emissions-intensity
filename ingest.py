@@ -65,3 +65,8 @@ def make_api_call(url,
 nger = make_api_call(
     url = f'{BASE_URL}/api/Schemes/NGER/DatasetCatalogItems'
 )
+
+for item in nger:
+    for key, value in item.items():
+        if isinstance(value, str) and "designated generation facility" in value:
+            print(f'{key}\n{value}\n') 
