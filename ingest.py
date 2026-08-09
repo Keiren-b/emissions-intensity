@@ -81,7 +81,12 @@ generation = [item for item in nger if item["displayName"].startswith(STEM)]
 
 # testing each id and name pulled correctly
 # print("Found:", len(generation))
+
 for item in generation:
+    id = item["id"]
     year = re.search(r"(\d{4})[-–](\d{2})", item["displayName"])
-    year = f'{year.group(1)}-{year.group(2)}'
-    print(item["id"], year)
+    year = f'{year.group(1)[2:]}{year.group(2)}'
+    make_api_call(
+        url = f'{BASE_URL}/api/Dataset/NGER/dataset/{id}/download'
+    )
+
