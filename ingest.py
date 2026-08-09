@@ -23,7 +23,8 @@ def make_api_call(url,
                   data=None, 
                   params=None, 
                   headers=None, 
-                  timeout = TIMEOUT):
+                  timeout = TIMEOUT,
+                  printout = True):
     request_method = getattr(requests, method.lower())
     try:
         response = request_method(
@@ -35,14 +36,16 @@ def make_api_call(url,
         )
         response.raise_for_status()
         if 'application/json' in response.headers.get('content-type', ''):
-            print("STATUS:", response.status_code)
-            print("TYPE:", response.headers.get("content-type"))
-            print("FIRST BIT:", response.text[:300])
+            if printout == True:
+                print("STATUS:", response.status_code)
+                print("TYPE:", response.headers.get("content-type"))
+                print("FIRST BIT:", response.text[:300])
             return response.json()
         else:
-            print("STATUS:", response.status_code)
-            print("TYPE:", response.headers.get("content-type"))
-            print("FIRST BIT:", response.text[:300])
+            if printout == True:
+                print("STATUS:", response.status_code)
+                print("TYPE:", response.headers.get("content-type"))
+                print("FIRST BIT:", response.text[:300])
             return response.text
         
     except requests.exceptions.HTTPError as http_err:
@@ -72,3 +75,9 @@ nger = make_api_call(
 #     for key, value in item.items():
 #         if isinstance(value, str) and "designated generation facility" in value:
 #             print(f'{key}\n{value}\n') 
+
+generation = [item for item in nger if item["displayName"].startswith(STEM)]
+print(generation)
+print("Found:", len(generation))
+for item in generation:
+    print(item["id"], item["displayName"])
