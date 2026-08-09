@@ -68,7 +68,8 @@ def make_api_call(url,
     return None
 
 nger = make_api_call(
-    url = f'{BASE_URL}/api/Schemes/NGER/DatasetCatalogItems'
+    url = f'{BASE_URL}/api/Schemes/NGER/DatasetCatalogItems',
+    printout=False
 )
 
 # for item in nger:
@@ -77,7 +78,8 @@ nger = make_api_call(
 #             print(f'{key}\n{value}\n') 
 
 generation = [item for item in nger if item["displayName"].startswith(STEM)]
-print(generation)
-print("Found:", len(generation))
-for item in generation:
-    print(item["id"], item["displayName"])
+
+# testing each id and name pulled correctly
+# print("Found:", len(generation))
+# for item in generation:
+#     print(item["id"], item["displayName"])
