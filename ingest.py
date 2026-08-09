@@ -9,6 +9,12 @@ PARAMS = {}
 OUTPUT_DIR = pathlib.Path("data/raw")
 TIMEOUT = 60
 
+#----------------------------------------------------------------------------------------
+# format for accessing CER data through API:
+# /api/Dataset/{schemeId}/dataset/{datasetId}/download
+# Params: schemeId (req), datasetId (req), format, entitlement
+#----------------------------------------------------------------------------------------
+
 def make_api_call(url, method="get", data=None, params=None, headers=None, timeout = TIMEOUT):
     request_method = getattr(requests, method.lower())
     try:
