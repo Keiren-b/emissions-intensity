@@ -77,29 +77,30 @@ nger = make_api_call(
 # Create list of dataset names
 generation = [item for item in nger if item["displayName"].startswith(STEM)]
 
-def download_data(filenames: List )
-for item in generation:
-    dataset_id = item["id"]
+def download_data(filenames: list) -> None:
+    for item in filenames:
+        dataset_id = item["id"]
+        match = re.search(r"(\d{4})[-–](\d{2})", item["displayName"])
+        year = f"{match.group(1)}-{match.group(2)}"
 
-    match = re.search(r"(\d{4})[-–](\d{2})", item["displayName"])
-    year = f"{match.group(1)}-{match.group(2)}"
+        rows = make_api_call(
+            url=f"{BASE_URL}/api/ODataDataset/NGER/dataset/{dataset_id}",
+            printout=False
+        )
 
-    rows = make_api_call(
-        url=f"{BASE_URL}/api/ODataDataset/NGER/dataset/{dataset_id}",
-        printout=False
-    )
+        if not rows:
+            print(f"FAILED: {dataset_id} {year}")
+            continue
 
-    if not rows:
-        print(f"FAILED: {dataset_id} {year}")
-        continue
+        for row in rows:
+            row["financial_year"] = year
 
-    for row in rows:
-        row["financial_year"] = year
+        df = pd.DataFrame(rows)
+        OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+        df.to_parquet(OUTPUT_DIR / f"nger_generation_{year}.parquet", index=False)
+        if year in ["2012-13", "2020-21"]:
+            print(df.head(5))
+        print(f"{year}: {len(rows)} rows, {len(df.columns)} columns")
+        print(f'{df.columns}\n')
 
-    df = pd.DataFrame(rows)
-    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-    df.to_parquet(OUTPUT_DIR / f"nger_generation_{year}.parquet", index=False)
-    if year in ["2012-13", "2020-21"]:
-        print(df.head(5))
-    print(f"{year}: {len(rows)} rows, {len(df.columns)} columns")
-    print(f'{df.columns}\n')
+# download_data(generation)
