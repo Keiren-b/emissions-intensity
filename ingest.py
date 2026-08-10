@@ -3,6 +3,7 @@ import pathlib
 import json
 import re
 from pprint import pprint
+import pandas as pd
 
 #----------------------------------------------------------------------------------------
 # format for downloading CER data through API:
@@ -67,51 +68,38 @@ def make_api_call(url,
         
     return None
 
+# Get names of Datasets
 nger = make_api_call(
     url = f'{BASE_URL}/api/Schemes/NGER/DatasetCatalogItems',
     printout=False
 )
 
-# for item in nger:
-#     for key, value in item.items():
-#         if isinstance(value, str) and "designated generation facility" in value:
-#             print(f'{key}\n{value}\n') 
-
+# Create list of dataset names
 generation = [item for item in nger if item["displayName"].startswith(STEM)]
 
-# testing each id and name pulled correctly
-# print("Found:", len(generation))
-
+def download_data(filenames: List )
 for item in generation:
-    id = item["id"]
-    print(id)
-    year = re.search(r"(\d{4})[-–](\d{2})", item["displayName"])
-    year = f'{year.group(1)[2:]}{year.group(2)}'
-    resp = make_api_call(
-        url = f'{BASE_URL}/api/Dataset/schemes/NGER/datasets/{id}/'
+    dataset_id = item["id"]
+
+    match = re.search(r"(\d{4})[-–](\d{2})", item["displayName"])
+    year = f"{match.group(1)}-{match.group(2)}"
+
+    rows = make_api_call(
+        url=f"{BASE_URL}/api/ODataDataset/NGER/dataset/{dataset_id}",
+        printout=False
     )
-    print(resp)
 
-# /api/Dataset/schemes/{schemeId}/datasets/{datasetId} this works
-# /api/Dataset/{schemeId}/dataset/{datasetId}/download
-# https://api.cer.gov.au/datahub-public/v1/api/ODataDataset/NGER/dataset/ID0082?select%3D%2A
+    if not rows:
+        print(f"FAILED: {dataset_id} {year}")
+        continue
 
-# x = make_api_call(url='https://api.cer.gov.au/datahub-public/v1/api/Dataset/NGER/dataset/ID0082/download', printout=False)
-# print(x)
+    for row in rows:
+        row["financial_year"] = year
 
-# r = requests.post(f"{BASE}/api/Dataset/NGER/dataset/ID0082/download.parquet",
-#                   json={}, timeout=60)
-# print(r.status_code, r.headers.get("content-type"), len(r.content))
-# print(r.text[:300] if r.status_code != 200 else "OK")
-
-# meta = make_api_call(f"{BASE}/api/Schemes/NGER/DatasetCatalogItems/ID0082")
-# print(meta)
-
-# meta2 = make_api_call(f"{BASE}/api/Dataset/schemes/NGER/datasets/ID0082")
-# print(meta2)
-
-# r = requests.post(f"{BASE}/api/Dataset/NGER/dataset/ID0082/download.parquet",
-#                   json={"RequestString": "NGER/NGER_Greenhouse and energy information by designated generation facility 2021-22.parquet"},
-#                   timeout=60)
-# print(r.status_code, r.headers.get("content-type"), len(r.content))
-# print(r.text[:200] if r.status_code != 200 else "OK")
+    df = pd.DataFrame(rows)
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    df.to_parquet(OUTPUT_DIR / f"nger_generation_{year}.parquet", index=False)
+    if year in ["2012-13", "2020-21"]:
+        print(df.head(5))
+    print(f"{year}: {len(rows)} rows, {len(df.columns)} columns")
+    print(f'{df.columns}\n')
