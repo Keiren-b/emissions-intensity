@@ -82,17 +82,36 @@ generation = [item for item in nger if item["displayName"].startswith(STEM)]
 # testing each id and name pulled correctly
 # print("Found:", len(generation))
 
-# for item in generation:
-#     id = item["id"]
-#     year = re.search(r"(\d{4})[-–](\d{2})", item["displayName"])
-#     year = f'{year.group(1)[2:]}{year.group(2)}'
-#     make_api_call(
-#         url = f'{BASE_URL}/api/Dataset/NGER/dataset/{id}/download'
-#     )
+for item in generation:
+    id = item["id"]
+    print(id)
+    year = re.search(r"(\d{4})[-–](\d{2})", item["displayName"])
+    year = f'{year.group(1)[2:]}{year.group(2)}'
+    resp = make_api_call(
+        url = f'{BASE_URL}/api/Dataset/schemes/NGER/datasets/{id}/'
+    )
+    print(resp)
 
 # /api/Dataset/schemes/{schemeId}/datasets/{datasetId} this works
 # /api/Dataset/{schemeId}/dataset/{datasetId}/download
 # https://api.cer.gov.au/datahub-public/v1/api/ODataDataset/NGER/dataset/ID0082?select%3D%2A
 
-x = make_api_call(url='https://api.cer.gov.au/datahub-public/v1/api/Dataset/NGER/dataset/ID0082/download', printout=False)
-print(x)
+# x = make_api_call(url='https://api.cer.gov.au/datahub-public/v1/api/Dataset/NGER/dataset/ID0082/download', printout=False)
+# print(x)
+
+# r = requests.post(f"{BASE}/api/Dataset/NGER/dataset/ID0082/download.parquet",
+#                   json={}, timeout=60)
+# print(r.status_code, r.headers.get("content-type"), len(r.content))
+# print(r.text[:300] if r.status_code != 200 else "OK")
+
+# meta = make_api_call(f"{BASE}/api/Schemes/NGER/DatasetCatalogItems/ID0082")
+# print(meta)
+
+# meta2 = make_api_call(f"{BASE}/api/Dataset/schemes/NGER/datasets/ID0082")
+# print(meta2)
+
+# r = requests.post(f"{BASE}/api/Dataset/NGER/dataset/ID0082/download.parquet",
+#                   json={"RequestString": "NGER/NGER_Greenhouse and energy information by designated generation facility 2021-22.parquet"},
+#                   timeout=60)
+# print(r.status_code, r.headers.get("content-type"), len(r.content))
+# print(r.text[:200] if r.status_code != 200 else "OK")
