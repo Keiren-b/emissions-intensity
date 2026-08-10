@@ -4,6 +4,10 @@ import json
 import re
 from pprint import pprint
 import pandas as pd
+import datetime
+import hashlib
+import csv
+
 
 #----------------------------------------------------------------------------------------
 # format for downloading CER data through API:
@@ -17,6 +21,7 @@ PARAMS = {}
 OUTPUT_DIR = pathlib.Path("data/raw")
 TIMEOUT = 60
 STEM = "Greenhouse and energy information by designated generation facility"
+records = []                     
 
 
 def make_api_call(url, 
@@ -77,9 +82,15 @@ nger = make_api_call(
 # Create list of dataset names
 generation = [item for item in nger if item["displayName"].startswith(STEM)]
 
-def download_data(filenames: list) -> None:
-    for item in filenames:
+def download_data(datasets: list) -> None:
+    """Download each dataset, save as Parquet, and write a manifest."""
+
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    records = []
+
+    for item in datasets:
         dataset_id = item["id"]
+
         match = re.search(r"(\d{4})[-–](\d{2})", item["displayName"])
         year = f"{match.group(1)}-{match.group(2)}"
 
@@ -95,12 +106,35 @@ def download_data(filenames: list) -> None:
         for row in rows:
             row["financial_year"] = year
 
+        filename = f"nger_generation_{year}.parquet"
+        filepath = OUTPUT_DIR / filename
+
         df = pd.DataFrame(rows)
-        OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-        df.to_parquet(OUTPUT_DIR / f"nger_generation_{year}.parquet", index=False)
-        if year in ["2012-13", "2020-21"]:
-            print(df.head(5))
+        df.to_parquet(filepath, index=False)
+
+        digest = hashlib.sha256(filepath.read_bytes()).hexdigest()
+
+        records.append({
+            "financial_year": year,
+            "dataset_id": dataset_id,
+            "rows": len(rows),
+            "columns": len(df.columns),
+            "local_file": filename,
+            "retrieved": datetime.date.today().isoformat(),
+            "sha256": digest,
+        })
+
         print(f"{year}: {len(rows)} rows, {len(df.columns)} columns")
-        print(f'{df.columns}\n')
+
+    if not records:
+        print("Nothing downloaded, no manifest written.")
+        return
+
+    with open(OUTPUT_DIR / "manifest.csv", "w", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=records[0].keys())
+        writer.writeheader()
+        writer.writerows(records)
+
+    print(f"Done. {len(records)} of {len(datasets)} datasets.")
 
 # download_data(generation)
